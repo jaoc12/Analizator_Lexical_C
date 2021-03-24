@@ -78,7 +78,10 @@ class AnalizatorLexical{
                                       {0, 39, "~"}, // ~
                                       {9, 40, "="}}; // /=
 
-        int stariFinale[9] = {1, 2, 3, 6, 7, 8, 9, 11, 14};
+        string lista_keywords[32] = { "auto", "double", "int", "struct", "break", "else",	"long",	"switch",
+                                    "case", "enum", "register",	"typedef", "char", "extern", "return", "union",
+                                    "const", "float", "short", "unsigned", "continue", "for", "signed", "void",
+                                    "default", "goto", "sizeof", "volatile", "do", "if", "static", "while"};
 
         int pozitie_text = 0;
 
@@ -135,8 +138,6 @@ class AnalizatorLexical{
             for(int i = 0; i <= 54; i++){
                 if(poz_start == transitions[i].start){
                     if(checkArgument(argument, transitions[i].argument_tranzitie)){
-                        /* transition t = transitions[i];
-                        cout << t.start << " " << t.end << " " << t.argument_tranzitie << endl; */
                         return transitions[i].end;
                     }
                 }
@@ -144,7 +145,16 @@ class AnalizatorLexical{
             return -1;
         }
 
-        /*
+    bool eKeyword(string cuvant) {
+        for(int i=0; i<32;i++){
+            if(cuvant == lista_keywords[i]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+/*
          * 1 = identificator
          * 2 = keyword
          * 3 = constanta intreaga
@@ -163,7 +173,12 @@ class AnalizatorLexical{
             }
             switch(pozitie){
                 case 1:
-                    tok = {1, -1};
+                    if(!eKeyword(cuvant)){
+                        tok = {1, -1};
+                    }
+                    else{
+                        tok = {2, -1};
+                    }
                     break;
                 case 2:
                     tok = {3, -1};
@@ -290,7 +305,7 @@ void writeToken(token tok){
 }
 
 int main() {
-    AnalizatorLexical dfa = AnalizatorLexical("14 14 a 14");
+    AnalizatorLexical dfa = AnalizatorLexical("asds12_ int while");
     token tok;
     do{
         tok = dfa.getToken();
