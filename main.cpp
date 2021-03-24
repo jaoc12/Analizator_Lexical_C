@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 using namespace std;
 
@@ -84,8 +85,8 @@ class AnalizatorLexical{
                                     "default", "goto", "sizeof", "volatile", "do", "if", "static", "while"};
 
         int pozitie_text = 0;
+        ifstream fisier_intrare;
 
-        string text;
         bool checkArgument(char argument_test, string argument_tranzitie) {
             if(argument_tranzitie == "litera"){
                 if(isalpha(argument_test) || argument_test == '_'){
@@ -169,44 +170,44 @@ class AnalizatorLexical{
             token tok;
             if(pozitie >= 15){
                 tok = {9, -1};
-                return tok;
             }
-            switch(pozitie){
-                case 1:
-                    if(!eKeyword(cuvant)){
-                        tok = {1, -1};
-                    }
-                    else{
-                        tok = {2, -1};
-                    }
-                    break;
-                case 2:
-                    tok = {3, -1};
-                    break;
-                case 3:
-                    tok = {4, -1};
-                    break;
-                case 6:
-                    tok = {5, -1};
-                    break;
-                case 7:
-                    tok = {6, -1};
-                    break;
-                case 8:
-                    tok = {7, -1};
-                    break;
-                case 9:
-                    tok = {9, -1};
-                    break;
-                case 11:
-                    tok = {8, -1};
-                    break;
-                case 14:
-                    tok = {8, -1};
-                    break;
-                default:
-                    tok = {-1, -1};
-                    break;
+            else {
+                switch (pozitie) {
+                    case 1:
+                        if (!eKeyword(cuvant)) {
+                            tok = {1, -1};
+                        } else {
+                            tok = {2, -1};
+                        }
+                        break;
+                    case 2:
+                        tok = {3, -1};
+                        break;
+                    case 3:
+                        tok = {4, -1};
+                        break;
+                    case 6:
+                        tok = {5, -1};
+                        break;
+                    case 7:
+                        tok = {6, -1};
+                        break;
+                    case 8:
+                        tok = {7, -1};
+                        break;
+                    case 9:
+                        tok = {9, -1};
+                        break;
+                    case 11:
+                        tok = {8, -1};
+                        break;
+                    case 14:
+                        tok = {8, -1};
+                        break;
+                    default:
+                        tok = {-1, -1};
+                        break;
+                }
             }
             bool gasit = false;
             for(int i=0; i<tabelaValori.nr; i++){
@@ -226,42 +227,55 @@ class AnalizatorLexical{
         }
 
     public:
-        AnalizatorLexical(string arg){
-            this->text = arg;
+        AnalizatorLexical(string intrare){
+            this->fisier_intrare.open(intrare, fstream::in);
+            if(!this->fisier_intrare.is_open()){
+                cout << "eroare la citire fisier intrare";
+            }
         }
 
         token getToken(){
             int poz_curenta = 0;
             int poz_noua = 0;
             string cuvant;
-            for(int i=this->pozitie_text; i <= text.length(); i++){
+            char c;
+            this->fisier_intrare.seekg(this->pozitie_text);
+            while (this->fisier_intrare.get(c)) {
                 this->pozitie_text += 1;
-                char c = text[i];
                 poz_noua = getTransition(poz_curenta, c);
-                if(poz_noua == -1){
+                if (poz_noua == -1) {
                     token tok = procesareStareFinala(poz_curenta, cuvant);
-                    if(tok.tip == -1){
+                    if (tok.tip == -1) {
                         return tok;
-                    }
-                    else{
+                    } else {
                         poz_curenta = 0;
                         cuvant = "";
-                        i--;
                         this->pozitie_text -= 1;
-                        if(tok.tip != 7 && tok.tip != 8){
+                        this->fisier_intrare.seekg(this->pozitie_text);
+                        if (tok.tip != 7 && tok.tip != 8) {
                             return tok;
                         }
                     }
-                }
-                else{
+                } else {
                     cuvant += c;
                     poz_curenta = poz_noua;
+                }
+            }
+            token tok = procesareStareFinala(poz_curenta, cuvant);
+            if (tok.tip == -1) {
+                return tok;
+            } else {
+                if (tok.tip != 7 && tok.tip != 8) {
+                    return tok;
+                } else {
+                    tok = {0, 0};
+                    return tok;
                 }
             }
         }
 };
 
-void writeToken(token tok){
+void writeToken(token tok, ostream& fisier_iesire){
     string valoare;
     string tip;
     for(int i=0; i<tabelaValori.nr; i++){
@@ -301,15 +315,25 @@ void writeToken(token tok){
         default:
             return;
     }
-    cout << tip << " - " << valoare << endl;
+    fisier_iesire << tip << " - " << valoare << endl;
 }
 
 int main() {
-    AnalizatorLexical dfa = AnalizatorLexical("asds12_ int while");
+    string intrare = R"(C:\Users\chitu\Desktop\Facultate\Anul 3\Sem2\Tehnici de compilare\Lab\Tema 1\intrare.txt)";
+    string iesire = R"(C:\Users\chitu\Desktop\Facultate\Anul 3\Sem2\Tehnici de compilare\Lab\Tema 1\iesire.txt)";
+    ofstream fisier_iesire;
+    fisier_iesire.open(iesire, iostream::trunc);
+    if(!fisier_iesire.is_open()){
+        cout << "eroare la citire fisier iesire" << endl;
+        cout << iesire << endl;
+        return -1;
+    }
+
+    AnalizatorLexical dfa = AnalizatorLexical(intrare);
     token tok;
     do{
         tok = dfa.getToken();
-        writeToken(tok);
-    }while(tok.tip != -1);
+        writeToken(tok, fisier_iesire);
+    }while(tok.tip > 0);
     return 0;
 }

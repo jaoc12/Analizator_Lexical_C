@@ -1,0 +1,3 @@
+int 13;
+_abc = 15 + 32 /* asddfa */;
+s = "assd ";
