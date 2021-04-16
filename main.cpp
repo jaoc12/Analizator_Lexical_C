@@ -3,13 +3,16 @@
 #include <vector>
 using namespace std;
 
+ofstream fisier_iesire;
+ifstream fisier_intrare;
+
 struct token{
     int tip;
     int referinta_valoare;
 };
 
 struct tabela_valori{
-    int nr = 0;
+    int nr;
     vector<int> referinta_valoare;
     vector<string> valoare;
     vector<bool> utilizat;
@@ -24,68 +27,11 @@ class AnalizatorLexical{
             string argument_tranzitie;
         };
 
-        transition transitions[54] = {{0, 1, "litera"},
-                                      {1, 1, "litera"},
-                                      {1, 1, "cifra"},
-                                      {0, 2, "cifra"},
-                                      {2, 2, "cifra"},
-                                      {0, 3, "."},
-                                      {2, 3, "."},
-                                      {3, 3, "cifra"},
-                                      {0, 4, "\""},
-                                      {4, 4, "comentariu"},
-                                      {4, 5, "\\"},
-                                      {4, 6, "\""},
-                                      {5, 4, "orice"},
-                                      {0, 7, ";"},
-                                      {7, 7, ";"},
-                                      {0, 8, " "},
-                                      {8, 8, " "},
-                                      {0, 8, "\n"},
-                                      {8, 8, "\n"},
-                                      {0, 9, "/"},
-                                      {9, 10, "/"},
-                                      {10, 10, "neterminal"},
-                                      {10, 11, "\n"},
-                                      {9, 12, "*"},
-                                      {12, 12, "notstar"},
-                                      {12, 13, "*"},
-                                      {13, 12, "notslash"},
-                                      {13, 14, "/"},
-                                      {0, 15, "+"}, // +
-                                      {15, 16, "+"}, // ++
-                                      {15, 17, "="}, // +=
-                                      {0, 18, "-"}, // -
-                                      {18, 19, "-"}, // --
-                                      {18, 19, "="}, // -=
-                                      {0, 21, "nerepetabil"}, // *
-                                      {21, 22, "="}, // *=
-                                      {0, 23, "="}, // =
-                                      {23, 24, "="}, // ==
-                                      {0, 25, ">"}, // >
-                                      {25, 26, "="}, // >=
-                                      {25, 27, ">"}, // >>
-                                      {27, 28, "="}, // >>=
-                                      {0, 29, "<"}, // <
-                                      {29, 30, "="}, // <=
-                                      {29, 31, "<"}, // <<
-                                      {31, 32, "="}, // <<=
-                                      {0, 33, "&"}, // &
-                                      {33, 34, "&"}, // &&
-                                      {33, 35, "="}, // &=
-                                      {0, 36, "|"}, // |
-                                      {36, 37, "|"}, // ||
-                                      {36, 38, "="}, // |=
-                                      {0, 39, "~"}, // ~
-                                      {9, 40, "="}}; // /=
+        transition transitions[54];
 
-        string lista_keywords[32] = { "auto", "double", "int", "struct", "break", "else",	"long",	"switch",
-                                    "case", "enum", "register",	"typedef", "char", "extern", "return", "union",
-                                    "const", "float", "short", "unsigned", "continue", "for", "signed", "void",
-                                    "default", "goto", "sizeof", "volatile", "do", "if", "static", "while"};
+        string lista_keywords[32];
 
-        int pozitie_text = 0;
-        ifstream fisier_intrare;
+        int pozitie_text;
 
         bool checkArgument(char argument_test, string argument_tranzitie) {
             if(argument_tranzitie == "litera"){
@@ -169,43 +115,56 @@ class AnalizatorLexical{
         token procesareStareFinala(int pozitie, string cuvant){
             token tok;
             if(pozitie >= 15){
-                tok = {9, -1};
+                tok.tip = 9;
+                tok.referinta_valoare = -1;
+                // tok = {9, -1};
             }
             else {
                 switch (pozitie) {
                     case 1:
                         if (!eKeyword(cuvant)) {
-                            tok = {1, -1};
+                            tok.tip = 1;
+                            // tok = {1, -1};
                         } else {
-                            tok = {2, -1};
+                            tok.tip = 2;
+                            // tok = {2, -1};
                         }
                         break;
                     case 2:
-                        tok = {3, -1};
+                        tok.tip = 3;
+                        // tok = {3, -1};
                         break;
                     case 3:
-                        tok = {4, -1};
+                        tok.tip = 4;
+                        // tok = {4, -1};
                         break;
                     case 6:
-                        tok = {5, -1};
+                        tok.tip = 5;
+                        // tok = {5, -1};
                         break;
                     case 7:
-                        tok = {6, -1};
+                        tok.tip = 6;
+                        // tok = {6, -1};
                         break;
                     case 8:
-                        tok = {7, -1};
+                        tok.tip = 7;
+                        // tok = {7, -1};
                         break;
                     case 9:
-                        tok = {9, -1};
+                        tok.tip = 9;
+                        // tok = {9, -1};
                         break;
                     case 11:
-                        tok = {8, -1};
+                        tok.tip = 8;
+                        // tok = {8, -1};
                         break;
                     case 14:
-                        tok = {8, -1};
+                        tok.tip = 8;
+                        // tok = {8, -1};
                         break;
                     default:
-                        tok = {-1, -1};
+                        tok.tip = -1;
+                        // tok = {-1, -1};
                         break;
                 }
             }
@@ -228,8 +187,77 @@ class AnalizatorLexical{
 
     public:
         AnalizatorLexical(string intrare){
-            this->fisier_intrare.open(intrare, fstream::in);
-            if(!this->fisier_intrare.is_open()){
+            string temp_keywords[32] = {    "auto", "double", "int", "struct", "break", "else",	"long",	"switch",
+                                            "case", "enum", "register",	"typedef", "char", "extern", "return", "union",
+                                            "const", "float", "short", "unsigned", "continue", "for", "signed", "void",
+                                            "default", "goto", "sizeof", "volatile", "do", "if", "static", "while"};
+            for(int i=0;i<32;i++){
+                lista_keywords[i] = temp_keywords[i];
+            }
+
+
+            transition temp_transitions[54] = {{0, 1, "litera"},
+                                          {1, 1, "litera"},
+                                          {1, 1, "cifra"},
+                                          {0, 2, "cifra"},
+                                          {2, 2, "cifra"},
+                                          {0, 3, "."},
+                                          {2, 3, "."},
+                                          {3, 3, "cifra"},
+                                          {0, 4, "\""},
+                                          {4, 4, "comentariu"},
+                                          {4, 5, "\\"},
+                                          {4, 6, "\""},
+                                          {5, 4, "orice"},
+                                          {0, 7, ";"},
+                                          {7, 7, ";"},
+                                          {0, 8, " "},
+                                          {8, 8, " "},
+                                          {0, 8, "\n"},
+                                          {8, 8, "\n"},
+                                          {0, 9, "/"},
+                                          {9, 10, "/"},
+                                          {10, 10, "neterminal"},
+                                          {10, 11, "\n"},
+                                          {9, 12, "*"},
+                                          {12, 12, "notstar"},
+                                          {12, 13, "*"},
+                                          {13, 12, "notslash"},
+                                          {13, 14, "/"},
+                                          {0, 15, "+"}, // +
+                                          {15, 16, "+"}, // ++
+                                          {15, 17, "="}, // +=
+                                          {0, 18, "-"}, // -
+                                          {18, 19, "-"}, // --
+                                          {18, 19, "="}, // -=
+                                          {0, 21, "nerepetabil"}, // *
+                                          {21, 22, "="}, // *=
+                                          {0, 23, "="}, // =
+                                          {23, 24, "="}, // ==
+                                          {0, 25, ">"}, // >
+                                          {25, 26, "="}, // >=
+                                          {25, 27, ">"}, // >>
+                                          {27, 28, "="}, // >>=
+                                          {0, 29, "<"}, // <
+                                          {29, 30, "="}, // <=
+                                          {29, 31, "<"}, // <<
+                                          {31, 32, "="}, // <<=
+                                          {0, 33, "&"}, // &
+                                          {33, 34, "&"}, // &&
+                                          {33, 35, "="}, // &=
+                                          {0, 36, "|"}, // |
+                                          {36, 37, "|"}, // ||
+                                          {36, 38, "="}, // |=
+                                          {0, 39, "~"}, // ~
+                                          {9, 40, "="}}; // /=
+
+            for(int i=0;i <54;i++){
+                transitions[i] = temp_transitions[i];
+            }
+            tabelaValori.nr = 0;
+            pozitie_text = 0;
+            fisier_intrare.open(intrare.c_str(), fstream::in);
+            if(!fisier_intrare.is_open()){
                 cout << "eroare la citire fisier intrare";
             }
         }
@@ -239,8 +267,8 @@ class AnalizatorLexical{
             int poz_noua = 0;
             string cuvant;
             char c;
-            this->fisier_intrare.seekg(this->pozitie_text);
-            while (this->fisier_intrare.get(c)) {
+            fisier_intrare.seekg(this->pozitie_text);
+            while (fisier_intrare.get(c)) {
                 this->pozitie_text += 1;
                 poz_noua = getTransition(poz_curenta, c);
                 if (poz_noua == -1) {
@@ -251,7 +279,7 @@ class AnalizatorLexical{
                         poz_curenta = 0;
                         cuvant = "";
                         this->pozitie_text -= 1;
-                        this->fisier_intrare.seekg(this->pozitie_text);
+                        fisier_intrare.seekg(this->pozitie_text);
                         if (tok.tip != 7 && tok.tip != 8) {
                             return tok;
                         }
@@ -268,7 +296,9 @@ class AnalizatorLexical{
                 if (tok.tip != 7 && tok.tip != 8) {
                     return tok;
                 } else {
-                    tok = {0, 0};
+                    tok.tip = 0;
+                    tok.referinta_valoare = 0;
+                    // tok = {0, 0};
                     return tok;
                 }
             }
@@ -319,10 +349,9 @@ void writeToken(token tok, ostream& fisier_iesire){
 }
 
 int main() {
-    string intrare = R"(C:\Users\chitu\Desktop\Facultate\Anul 3\Sem2\Tehnici de compilare\Lab\Tema 1\intrare.txt)";
-    string iesire = R"(C:\Users\chitu\Desktop\Facultate\Anul 3\Sem2\Tehnici de compilare\Lab\Tema 1\iesire.txt)";
-    ofstream fisier_iesire;
-    fisier_iesire.open(iesire, iostream::trunc);
+    string intrare = "/home/jaoc/Desktop/Facultate/TC/Analizator_Lexical_C/intrare.txt";
+    string iesire = "/home/jaoc/Desktop/Facultate/TC/Analizator_Lexical_C/iesire.txt";
+    fisier_iesire.open(iesire.c_str(), iostream::trunc);
     if(!fisier_iesire.is_open()){
         cout << "eroare la citire fisier iesire" << endl;
         cout << iesire << endl;
