@@ -1,3 +1,4 @@
 keyword - int
-constanta intreaga - 13
-separator - ;
+constanta intreaga - 5
+operator - =
+identificator - abc

@@ -27,7 +27,7 @@ class AnalizatorLexical{
             string argument_tranzitie;
         };
 
-        transition transitions[54];
+        transition transitions[55];
 
         string lista_keywords[32];
 
@@ -73,6 +73,13 @@ class AnalizatorLexical{
                     return true;
                 }
             }
+            if(argument_tranzitie == "paranteza"){
+                if(argument_test == '(' || argument_test == ')'
+                || argument_test == '[' || argument_test == ']'
+                || argument_test == '{' || argument_test == '}'){
+                    return true;
+                }
+            }
             if(argument_tranzitie.length() == 1){
                 if(argument_tranzitie[0] == argument_test){
                     return true;
@@ -82,7 +89,7 @@ class AnalizatorLexical{
         }
 
         int getTransition(int poz_start, char argument){
-            for(int i = 0; i <= 54; i++){
+            for(int i = 0; i < 55; i++){
                 if(poz_start == transitions[i].start){
                     if(checkArgument(argument, transitions[i].argument_tranzitie)){
                         return transitions[i].end;
@@ -111,61 +118,67 @@ class AnalizatorLexical{
          * 7 = spatiu/sfarsit de linie
          * 8 = comentariu
          * 9 = operator
+         * 10 = paranteza
          */
         token procesareStareFinala(int pozitie, string cuvant){
             token tok;
-            if(pozitie >= 15){
-                tok.tip = 9;
+            if(pozitie == 41){
+                tok.tip = 10;
                 tok.referinta_valoare = -1;
-                // tok = {9, -1};
             }
             else {
-                switch (pozitie) {
-                    case 1:
-                        if (!eKeyword(cuvant)) {
-                            tok.tip = 1;
-                            // tok = {1, -1};
-                        } else {
-                            tok.tip = 2;
-                            // tok = {2, -1};
-                        }
-                        break;
-                    case 2:
-                        tok.tip = 3;
-                        // tok = {3, -1};
-                        break;
-                    case 3:
-                        tok.tip = 4;
-                        // tok = {4, -1};
-                        break;
-                    case 6:
-                        tok.tip = 5;
-                        // tok = {5, -1};
-                        break;
-                    case 7:
-                        tok.tip = 6;
-                        // tok = {6, -1};
-                        break;
-                    case 8:
-                        tok.tip = 7;
-                        // tok = {7, -1};
-                        break;
-                    case 9:
-                        tok.tip = 9;
-                        // tok = {9, -1};
-                        break;
-                    case 11:
-                        tok.tip = 8;
-                        // tok = {8, -1};
-                        break;
-                    case 14:
-                        tok.tip = 8;
-                        // tok = {8, -1};
-                        break;
-                    default:
-                        tok.tip = -1;
-                        // tok = {-1, -1};
-                        break;
+                if (pozitie >= 15) {
+                    tok.tip = 9;
+                    tok.referinta_valoare = -1;
+                    // tok = {9, -1};
+                } else {
+                    switch (pozitie) {
+                        case 1:
+                            if (!eKeyword(cuvant)) {
+                                tok.tip = 1;
+                                // tok = {1, -1};
+                            } else {
+                                tok.tip = 2;
+                                // tok = {2, -1};
+                            }
+                            break;
+                        case 2:
+                            tok.tip = 3;
+                            // tok = {3, -1};
+                            break;
+                        case 3:
+                            tok.tip = 4;
+                            // tok = {4, -1};
+                            break;
+                        case 6:
+                            tok.tip = 5;
+                            // tok = {5, -1};
+                            break;
+                        case 7:
+                            tok.tip = 6;
+                            // tok = {6, -1};
+                            break;
+                        case 8:
+                            tok.tip = 7;
+                            // tok = {7, -1};
+                            break;
+                        case 9:
+                            tok.tip = 9;
+                            // tok = {9, -1};
+                            break;
+                        case 11:
+                            tok.tip = 8;
+                            // tok = {8, -1};
+                            break;
+                        case 14:
+                            tok.tip = 8;
+                            // tok = {8, -1};
+                            break;
+                        default:
+                            tok.tip = -1;
+                            // tok = {-1, -1};
+                            break;
+                    }
                 }
             }
             bool gasit = false;
@@ -196,7 +209,7 @@ class AnalizatorLexical{
             }
 
 
-            transition temp_transitions[54] = {{0, 1, "litera"},
+            transition temp_transitions[55] = {{0, 1, "litera"},
                                           {1, 1, "litera"},
                                           {1, 1, "cifra"},
                                           {0, 2, "cifra"},
@@ -249,9 +262,10 @@ class AnalizatorLexical{
                                           {36, 37, "|"}, // ||
                                           {36, 38, "="}, // |=
                                           {0, 39, "~"}, // ~
-                                          {9, 40, "="}}; // /=
+                                          {9, 40, "="}, // /
+                                          {0, 41, "paranteza"}};
 
-            for(int i=0;i <54;i++){
+            for(int i=0;i <55;i++){
                 transitions[i] = temp_transitions[i];
             }
             tabelaValori.nr = 0;
@@ -280,7 +294,7 @@ class AnalizatorLexical{
                         cuvant = "";
                         this->pozitie_text -= 1;
                         fisier_intrare.seekg(this->pozitie_text);
-                        if (tok.tip != 7 && tok.tip != 8) {
+                        if (tok.tip != 7 && tok.tip != 8 && tok.tip != 10) {
                             return tok;
                         }
                     }
@@ -291,9 +305,15 @@ class AnalizatorLexical{
             }
             token tok = procesareStareFinala(poz_curenta, cuvant);
             if (tok.tip == -1) {
+                if(cuvant.empty()){
+                    tok.tip = 0;
+                    tok.referinta_valoare = 0;
+                    // tok = {0, 0} pentru final;
+                    return tok;
+                }
                 return tok;
             } else {
-                if (tok.tip != 7 && tok.tip != 8) {
+                if (tok.tip != 7 && tok.tip != 8 && tok.tip != 10) {
                     return tok;
                 } else {
                     tok.tip = 0;
@@ -308,6 +328,7 @@ class AnalizatorLexical{
 void writeToken(token tok, ostream& fisier_iesire){
     string valoare;
     string tip;
+
     for(int i=0; i<tabelaValori.nr; i++){
         if(tabelaValori.referinta_valoare[i] == tok.referinta_valoare){
             if(tabelaValori.utilizat[i]){
@@ -362,6 +383,10 @@ int main() {
     token tok;
     do{
         tok = dfa.getToken();
+        if(tok.tip == -1){
+            fisier_iesire << "eroare";
+            break;
+        }
         writeToken(tok, fisier_iesire);
     }while(tok.tip > 0);
     return 0;
