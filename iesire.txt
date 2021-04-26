@@ -1,10 +1,4 @@
 keyword - int
-constanta intreaga - 13
-separator - ;
-identificator - _abc
+constanta intreaga - 5
 operator - =
-constanta intreaga - 15
-operator - +
-constanta intreaga - 32
-identificator - s
-constanta literara - "assd "
+identificator - abc
